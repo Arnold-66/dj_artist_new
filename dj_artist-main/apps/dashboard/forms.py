@@ -26,67 +26,8 @@ class BookingReplyForm(forms.Form):
     )
 
 
-# ---------- USERS ----------
-class UserCreateForm(forms.ModelForm):
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}), label="Password")
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}), label="Confirm Password")
-
-    class Meta:
-        model = User
-        fields = ["username", "first_name", "last_name", "email", "role", "is_staff", "is_active"]
-        widgets = {
-            "username": forms.TextInput(attrs={"class": "form-control"}),
-            "first_name": forms.TextInput(attrs={"class": "form-control"}),
-            "last_name": forms.TextInput(attrs={"class": "form-control"}),
-            "email": forms.EmailInput(attrs={"class": "form-control"}),
-            "role": forms.Select(attrs={"class": "form-select"}),
-        }
-
-    def clean(self):
-        cleaned = super().clean()
-        if cleaned.get("password1") != cleaned.get("password2"):
-            raise forms.ValidationError("Passwords do not match.")
-        if cleaned.get("password1") and len(cleaned["password1"]) < 8:
-            raise forms.ValidationError("Password must be at least 8 characters.")
-        return cleaned
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        user.is_staff = True
-        if commit:
-            user.save()
-        return user
 
 
-class UserEditForm(forms.ModelForm):
-    new_password = forms.CharField(
-        required=False,
-        widget=forms.PasswordInput(attrs={"class": "form-control"}),
-        label="New Password (leave blank to keep current)",
-    )
-
-    class Meta:
-        model = User
-        fields = ["username", "first_name", "last_name", "email", "role", "is_staff", "is_active"]
-        widgets = {
-            "username": forms.TextInput(attrs={"class": "form-control"}),
-            "first_name": forms.TextInput(attrs={"class": "form-control"}),
-            "last_name": forms.TextInput(attrs={"class": "form-control"}),
-            "email": forms.EmailInput(attrs={"class": "form-control"}),
-            "role": forms.Select(attrs={"class": "form-select"}),
-        }
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        pwd = self.cleaned_data.get("new_password")
-        if pwd:
-            if len(pwd) < 8:
-                raise forms.ValidationError("Password must be at least 8 characters.")
-            user.set_password(pwd)
-        if commit:
-            user.save()
-        return user
 
 
 # ---------- MUSIC ----------
@@ -135,23 +76,8 @@ class EventForm(forms.ModelForm):
 
 
 # ---------- ARTIST PROFILES ----------
-from django.contrib.auth.forms import AuthenticationForm
 from apps.core.models import ArtistProfile
 
-
-class StaffLoginForm(AuthenticationForm):
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Username",
-        })
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            "class": "form-control",
-            "placeholder": "Password",
-        })
-    )
 
 
 class DJProfileForm(forms.ModelForm):
@@ -297,7 +223,5 @@ class DJProfileSelfForm(DJProfileForm):
         self.fields.pop("dj_user")
         self.fields.pop("operator_users")
 
-        
+
 # Compatibility with the names already imported in views.py.
-StaffUserForm = UserEditForm
-StaffUserCreateForm = UserCreateForm

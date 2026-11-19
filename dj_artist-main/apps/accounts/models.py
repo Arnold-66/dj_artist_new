@@ -16,19 +16,18 @@ class User(AbstractUser):
         (ROLE_KIT_USER, "Press Kit User"),
     ]
 
+    # ✅ Unique email
+    email = models.EmailField(unique=True)
+
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_KIT_USER)
 
-    # DJ users: which artist profile do they own?
     dj_profile = models.OneToOneField(
         "core.ArtistProfile",
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name="owner_user",
         help_text="Required for DJ-role users. Links this account to one artist.",
     )
-
-    # Operators: which DJs can they manage?
     managed_artists = models.ManyToManyField(
         "core.ArtistProfile",
         blank=True,
@@ -36,7 +35,6 @@ class User(AbstractUser):
         help_text="DJs this operator is assigned to manage.",
     )
 
-    # Kit users + subscription
     is_subscribed = models.BooleanField(default=True)
     subscribed_at = models.DateTimeField(default=timezone.now, blank=True)
     unsubscribed_at = models.DateTimeField(null=True, blank=True)
@@ -62,16 +60,29 @@ class User(AbstractUser):
         return self.role == self.ROLE_KIT_USER
 
     @property
+    def is_management_user(self):
+        """Admins / operators / DJs — the people who use the dashboard."""
+        return self.is_admin_role or self.is_operator_role or self.is_dj_role or self.is_staff
+
+    @property
+    def email_verified(self):
+        return self.emailaddress_set.filter(verified=True).exists()
+
+    @property
     def can_download(self):
-        if self.is_staff or self.is_superuser or self.is_dj_role or self.is_operator_role:
+        if self.is_management_user:
             return True
-        return self.is_active and self.emailaddress_set.filter(verified=True).exists()
+        return self.is_active and self.email_verified
+
+    @property
+    def can_manage_events(self):
+        """Only admins and operators may create/edit/delete events."""
+        return self.is_admin_role or self.is_operator_role
+
 
     # ---------- Scope helpers ----------
     def accessible_artists(self):
-        """Queryset of ArtistProfile this user can see/manage."""
         from apps.core.models import ArtistProfile
-
         if self.is_admin_role:
             return ArtistProfile.objects.all()
         if self.is_dj_role and self.dj_profile_id:
@@ -92,7 +103,6 @@ class User(AbstractUser):
         return False
 
     def can_manage_role(self, other_user):
-        """Only admin can manage other users (and never another superuser)."""
         if not self.is_admin_role:
             return False
         if other_user.is_superuser and other_user != self:

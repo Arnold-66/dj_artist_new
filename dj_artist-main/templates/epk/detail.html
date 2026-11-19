@@ -12,7 +12,17 @@
       {{ kit.short_bio|default:"Artist biography, technical riders and professional press materials for promoters and media." }}
     </p>
     <p class="epk-updated">Last updated: {{ kit.updated_at|date:"d F Y" }}</p>
-    <a href="/epk/{{ kit.pk }}/" class="btn btn-gold">DOWNLOAD PRESS KIT</a>
+    {% if can_download %}
+        <a href="{% url 'epk:press_kit_download' kit.pk %}" class="btn btn-gold">
+            DOWNLOAD PRESS KIT
+        </a>
+    {% else %}
+        <a href="{% url 'account_login' %}?next={% url 'epk:detail' slug=kit.slug %}"
+        class="btn btn-gold"
+        title="Sign in with a verified account to download">
+            DOWNLOAD PRESS KIT
+        </a>
+    {% endif %}
     <a href="/bookings/" class="btn btn-outline-light">MAKE A BOOKING</a>
   </div>
   <div class="scroll-indicator">SCROLL TO EXPLORE</div>

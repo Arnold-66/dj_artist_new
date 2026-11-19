@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.core.models import slugify
+
 from .models import PressKit, PressImage
 from .forms import (
     PressKitManagementForm,
@@ -14,15 +16,131 @@ from .forms import (
     PressImageEditForm,
 )
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from apps.dashboard.models import AuditLog
+import io
 
+import zipfile
+
+from django.http import FileResponse, Http404
+from pathlib import Path
+
+from apps.download.utils import log_download
 
 def is_management_user(user):
-    return user.is_authenticated and user.is_active and user.is_staff
+    """Only admin / operator / DJ roles may manage EPKs."""
+    return (
+        user.is_authenticated
+        and user.is_active
+        and not user.is_kit_user
+        and (user.is_admin_role or user.is_operator_role or user.is_dj_role)
+    )
 
 
+@login_required
+def press_kit_download(request, kit_id):
+    """
+    Bundle the press kit (bio, riders, press images) into a single ZIP
+    and stream it to the user. Requires a verified account (can_download).
+    """
+    if not getattr(request.user, "can_download", False):
+        messages.error(request, "Please verify your email address to download.")
+        return redirect("account_email_verification_sent")
 
+    kit = get_object_or_404(
+        PressKit.objects.prefetch_related("press_images"),
+        pk=kit_id,
+        is_published=True,
+    )
+
+    # Build the ZIP in memory
+    buffer = io.BytesIO()
+    added_files = 0
+
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        # --- Bio / metadata text file ---
+        bio_lines = [
+            f"PRESS KIT: {kit.title}",
+            f"Last updated: {kit.updated_at:%d %B %Y}",
+            "",
+            "SHORT BIO",
+            "---------",
+            kit.short_bio or "(not provided)",
+            "",
+            "FULL BIO",
+            "--------",
+            kit.full_bio or "(not provided)",
+            "",
+        ]
+        zf.writestr("README.txt", "\n".join(bio_lines))
+        added_files += 1
+
+        # --- Riders ---
+        for field_name, label, _desc in kit.rider_slots:
+            file_field = getattr(kit, {
+                "technical": "technical_rider",
+                "hospitality": "hospitality_rider",
+                "stage_plot": "stage_plot",
+            }[field_name])
+            if not file_field:
+                continue
+            try:
+                with file_field.open("rb") as fh:
+                    zf.writestr(
+                        f"riders/{Path(file_field.name).name}",
+                        fh.read(),
+                    )
+                added_files += 1
+            except Exception:
+                pass
+
+        # --- Press images ---
+        for idx, photo in enumerate(kit.press_images.all(), start=1):
+            try:
+                with photo.image.open("rb") as fh:
+                    ext = Path(photo.image.name).suffix.lower() or ".jpg"
+                    safe_title = (photo.title or f"press-image-{idx}").strip()
+                    safe_title = "".join(
+                        c for c in safe_title if c.isalnum() or c in " -_"
+                    ).strip() or f"press-image-{idx}"
+                    zf.writestr(
+                        f"press-images/{idx:02d} - {safe_title}{ext}",
+                        fh.read(),
+                    )
+                added_files += 1
+            except Exception:
+                pass
+
+    if added_files == 0:
+        messages.error(request, "This press kit has no content to download yet.")
+        return redirect("epk:detail", slug=kit.slug)
+
+    buffer.seek(0)
+
+    # Log it (don't let logging failures block the download)
+    try:
+        log_download(
+            request.user,
+            title=f"{kit.title} — Press Kit (ZIP)",
+            kind="epk",
+            reference_id=kit.pk,
+            file_url=request.build_absolute_uri(),
+            request=request,
+        )
+    except Exception:
+        pass
+
+    filename = f"{slugify(kit.title) or 'press-kit'}-press-kit.zip"
+    return FileResponse(
+        buffer,
+        as_attachment=True,
+        filename=filename,
+        content_type="application/zip",
+    )
+
+@login_required
+@user_passes_test(is_management_user, login_url="dashboard:login")
 def activate_kit(request, kit_id):
     if request.method != "POST":
         return redirect("epk:kits_index")

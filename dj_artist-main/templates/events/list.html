@@ -14,7 +14,7 @@
             <span>EVENTS.</span>
         </h1>
 
-        {% if request.user.is_authenticated and request.user.is_staff %}
+        {% if request.user.is_authenticated and request.user.can_manage_events %}
             <div style="margin-top: 20px;">
                 <a href="{% url 'events:create' %}" class="btn btn-gold">
                     + ADD EVENT
@@ -110,7 +110,7 @@
                             EVENT DETAILS ↗
                         </a>
 
-                        {% if request.user.is_authenticated and request.user.is_staff %}
+                        {% if request.user.is_authenticated and request.user.can_manage_events %}
                             <div class="event-manage-row">
                                 <a href="{% url 'events:update' event.slug %}"
                                    class="btn btn-outline-success btn-sm">EDIT</a>
@@ -193,7 +193,7 @@
                         VIEW DETAILS ↗
                     </a>
 
-                    {% if request.user.is_authenticated and request.user.is_staff %}
+                    {% if request.user.is_authenticated and request.user.can_manage_events %}
                         <div class="schedule-manage-row">
                             <a href="{% url 'events:update' event.slug %}"
                                class="text-link">EDIT</a>

@@ -54,6 +54,11 @@ urlpatterns = [
         views.press_image_download,
         name="press_image_download",
     ),
+    path(
+        "<int:kit_id>/download/",
+        views.press_kit_download,
+        name="press_kit_download",
+    ),
 
     # ---------- Public catch-all — MUST be LAST ----------
     path("<slug:slug>/", views.press_kit, name="detail"),

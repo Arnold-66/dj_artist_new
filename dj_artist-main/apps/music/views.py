@@ -13,6 +13,38 @@ from apps.download.utils import log_download
 
 
 # ---------------------------------------------------------------------
+# Helper: centralized permission checks
+# ---------------------------------------------------------------------
+def _is_kit_user(user):
+    return user.is_authenticated and getattr(user, "is_kit_user", False)
+
+
+def _can_manage_music(user):
+    """
+    Add/Edit/Delete permission.
+    Kit users are explicitly excluded, even if they have is_staff=True.
+    """
+    if not user.is_authenticated:
+        return False
+    if _is_kit_user(user):
+        return False
+    return (
+        user.is_superuser
+        or getattr(user, "is_admin_role", False)
+        or user.is_staff
+    )
+
+
+def _can_download(user):
+    """
+    Download permission. Kit users CAN download (audio only — enforced in view).
+    """
+    if not user.is_authenticated:
+        return False
+    return getattr(user, "can_download", False)
+
+
+# ---------------------------------------------------------------------
 # LIST — public, but scoped for logged-in users
 # ---------------------------------------------------------------------
 def mix_list(request):
@@ -27,7 +59,7 @@ def mix_list(request):
 
     # If the logged-in user is a DJ/operator, scope to their accessible artists
     user = request.user
-    if user.is_authenticated and not user.is_staff and not user.is_superuser:
+    if user.is_authenticated and not _is_kit_user(user) and not user.is_staff and not user.is_superuser:
         artists = user.accessible_artists() if hasattr(user, "accessible_artists") else []
         if artists:
             videos = videos.filter(artist__in=artists)
@@ -48,11 +80,10 @@ def mix_list(request):
     if other_tracks.exists():
         audio_groups.append({"name": "Other Platforms", "tracks": other_tracks})
 
-    # Determine permissions for template
-    can_manage = user.is_authenticated and (
-        user.is_superuser or getattr(user, "is_admin_role", False) or user.is_staff
-    )
-    can_download = user.is_authenticated and getattr(user, "can_download", False)
+    # Centralized permission flags for template
+    can_manage = _can_manage_music(user)
+    can_download = _can_download(user)
+    is_kit_user = _is_kit_user(user)
 
     return render(
         request,
@@ -63,18 +94,23 @@ def mix_list(request):
             "total_audio_count": audios.count(),
             "can_manage": can_manage,
             "can_download": can_download,
+            "is_kit_user": is_kit_user,
         },
     )
 
 
 # ---------------------------------------------------------------------
-# ADD / EDIT / DELETE — staff (admin/operator/DJ) only
+# ADD / EDIT / DELETE — staff (admin/operator/DJ) only — NEVER kit users
 # ---------------------------------------------------------------------
 @staff_member_required
 def mix_add(request):
+    # Explicit gate: kit users can never manage music
+    if _is_kit_user(request.user):
+        messages.error(request, "You do not have permission to add music.")
+        return redirect("music:list")
+
     if request.method == "POST":
         form = MixForm(request.POST, request.FILES)
-        # Scope artist dropdown to the user's accessible artists
         if hasattr(request.user, "accessible_artists"):
             form.fields["artist"].queryset = request.user.accessible_artists()
         if form.is_valid():
@@ -91,8 +127,11 @@ def mix_add(request):
 
 @staff_member_required
 def mix_edit(request, pk):
+    if _is_kit_user(request.user):
+        messages.error(request, "You do not have permission to edit music.")
+        return redirect("music:list")
+
     mix = get_object_or_404(Mix, pk=pk)
-    # Only allow if user can manage this artist
     if hasattr(request.user, "can_manage_artist") and not request.user.can_manage_artist(mix.artist):
         messages.error(request, "You cannot edit that track.")
         return redirect("music:list")
@@ -115,6 +154,10 @@ def mix_edit(request, pk):
 
 @staff_member_required
 def mix_delete(request, pk):
+    if _is_kit_user(request.user):
+        messages.error(request, "You do not have permission to delete music.")
+        return redirect("music:list")
+
     mix = get_object_or_404(Mix, pk=pk)
     if hasattr(request.user, "can_manage_artist") and not request.user.can_manage_artist(mix.artist):
         messages.error(request, "You cannot delete that track.")
@@ -148,7 +191,7 @@ def mix_download(request, pk):
     mix = get_object_or_404(Mix, pk=pk, is_published=True)
 
     # Gate 2: kit users can only download audio
-    if getattr(user, "is_kit_user", False) and mix.media_type == "video":
+    if _is_kit_user(user) and mix.media_type == "video":
         messages.error(request, "Kit users may only download audio tracks.")
         return redirect("music:list")
 
@@ -170,7 +213,6 @@ def mix_download(request, pk):
 
     filename = Path(file_field.name).name
 
-    # Log the download
     try:
         log_download(
             user,
@@ -181,9 +223,8 @@ def mix_download(request, pk):
             request=request,
         )
     except Exception:
-        pass  # don't block download if logging fails
+        pass
 
-    # Embed cover art in ID3 tags for audio
     if is_audio and mix.cover_image:
         try:
             buffer = _embed_cover_in_audio(file_field, mix)

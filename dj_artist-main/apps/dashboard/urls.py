@@ -4,10 +4,8 @@ from . import views
 app_name = "dashboard"
 
 urlpatterns = [
-    # ---------- Auth ----------
-    path("login/", views.StaffLoginView.as_view(), name="login"),
-    path("logout/", views.staff_logout, name="logout"),
-
+   
+    
     # ---------- Overview ----------
     path("", views.overview, name="overview"),
 
@@ -36,10 +34,5 @@ urlpatterns = [
     path("bookings/", views.bookings_list, name="bookings_list"),
     path("bookings/<int:booking_id>/", views.booking_detail, name="booking_detail"),
 
-    # ---------- Users (admin only) ----------
-    path("users/", views.user_list, name="user_list"),
-    path("users/create/", views.user_create, name="user_create"),
-    path("users/<int:user_id>/edit/", views.user_edit, name="user_edit"),
-    path("users/<int:user_id>/delete/", views.user_delete, name="user_delete"),
-    path("users/<int:user_id>/toggle/", views.user_toggle_active, name="user_toggle"),
+   
 ]

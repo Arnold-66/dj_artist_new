@@ -98,7 +98,7 @@
                 {# ---------- AUTH ---------- #}
                 {% if request.user.is_authenticated %}
                     <li class="nav-item">
-                        <form method="post" action="{% url 'dashboard:logout' %}" class="d-inline">
+                        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="nav-link btn btn-link p-0" style="text-decoration:none;">
                                 LOGOUT
@@ -107,7 +107,7 @@
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard:login' %}">LOGIN</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">LOGIN</a>
                     </li>
                 {% endif %}
 
@@ -178,7 +178,7 @@
                     {% endfor %}
                 </div>
                 <a href="/subscribe/">Subscribe</a>
-                <a href="{% url 'dashboard:login' %}">Management login</a>
+                <a href="{% url 'accounts:login' %}">Management login</a>
             </div>
         </div>
         <div class="sinc-bottom">

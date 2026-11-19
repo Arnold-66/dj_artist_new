@@ -69,8 +69,8 @@
                                 </div>
                             {% endif %}
 
-                            {# DOWNLOAD — only for logged-in users with download permission #}
-                            {% if can_download and video.video_file %}
+                            {# DOWNLOAD — logged-in users with permission, but NOT kit users for video #}
+                            {% if can_download and video.video_file and not is_kit_user %}
                                 <div class="mt-2">
                                     <a href="{% url 'music:download' video.pk %}" class="btn btn-outline-gold btn-sm">
                                         ⬇ DOWNLOAD
@@ -78,7 +78,7 @@
                                 </div>
                             {% endif %}
 
-                            {# STAFF ACTIONS — only for admin/operator/DJ #}
+                            {# STAFF ACTIONS — never shown to kit users #}
                             {% if can_manage %}
                                 <div class="staff-actions mt-2 d-flex gap-2">
                                     <a href="{% url 'music:edit' video.pk %}" class="btn btn-gold btn-sm">EDIT</a>
@@ -170,7 +170,7 @@
                                         </div>
                                     {% endif %}
 
-                                    {# DOWNLOAD — only for logged-in users with permission #}
+                                    {# DOWNLOAD — kit users CAN download audio #}
                                     {% if can_download and audio.audio_file %}
                                         <div class="mt-2">
                                             <a href="{% url 'music:download' audio.pk %}" class="btn btn-outline-gold btn-sm">
@@ -179,7 +179,7 @@
                                         </div>
                                     {% endif %}
 
-                                    {# STAFF ACTIONS #}
+                                    {# STAFF ACTIONS — never shown to kit users #}
                                     {% if can_manage %}
                                         <div class="staff-actions mt-2 d-flex gap-2">
                                             <a href="{% url 'music:edit' audio.pk %}" class="btn btn-gold btn-sm">EDIT</a>

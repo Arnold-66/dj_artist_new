@@ -75,7 +75,7 @@
     <div class="event-detail-back-row">
       <a href="{% url 'events:list' %}" class="text-link">← BACK TO ALL EVENTS</a>
 
-      {% if request.user.is_authenticated and request.user.is_staff %}
+      {% if request.user.is_authenticated and request.user.can_manage_events %}
         <div class="event-detail-admin-actions">
           <a href="{% url 'events:update' event.slug %}"
              class="btn btn-outline-light btn-sm">EDIT EVENT</a>

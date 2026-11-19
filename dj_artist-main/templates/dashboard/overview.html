@@ -24,7 +24,7 @@
                 </p>
             </div>
 
-            <form method="post" action="{% url 'dashboard:logout' %}">
+            <form method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-light">
                     LOG OUT
@@ -194,7 +194,7 @@
             {% if request.user.is_admin_role %}
 
                 <div class="col-12 col-sm-6 col-lg-4">
-                    <a href="{% url 'dashboard:user_list' %}" class="management-card">
+                    <a href="{% url 'accounts:user_list' %}" class="management-card">
                         <h3 class="webhead">User Management</h3>
                         <p>Create staff accounts, manage users and assign responsibilities.</p>
                         <span>MANAGE USERS →</span>

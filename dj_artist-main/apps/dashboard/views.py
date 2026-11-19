@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.views import LoginView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -14,45 +14,20 @@ from apps.events.models import Event
 from apps.music.models import Mix
 
 from .forms import (
-    StaffLoginForm,
+   
     DJProfileForm,
     DJProfileSelfForm,
-    StaffUserForm,
-    StaffUserCreateForm,
     MixForm,
     EventForm,
     BookingStatusForm,
     BookingReplyForm,
 )
+
+
 from .models import AuditLog
 from .permissions import admin_required, staff_required
 
 User = get_user_model()
-
-
-# =========================================================
-# AUTH
-# =========================================================
-class StaffLoginView(LoginView):
-    template_name = "dashboard/login.html"
-    authentication_form = StaffLoginForm
-    redirect_authenticated_user = False
-
-    def form_valid(self, form):
-        user = form.get_user()
-        if user.is_kit_user or not user.is_active:
-            form.add_error(None, "This account does not have management access.")
-            return self.form_invalid(form)
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("dashboard:overview")
-
-
-@require_POST
-def staff_logout(request):
-    logout(request)
-    return redirect("dashboard:login")
 
 
 # =========================================================
@@ -259,91 +234,8 @@ def dj_delete(request, pk):
         "dj": dj,
     })
 
-# =========================================================
-# USERS (admin only)
-# =========================================================
-@admin_required
-def user_list(request):
-    users = User.objects.order_by("role", "username")
-    return render(request, "dashboard/user_list.html", {"users": users})
 
 
-@admin_required
-def user_create(request):
-    if request.method == "POST":
-        form = StaffUserCreateForm(request.POST)
-        if form.is_valid():
-            new_user = form.save()
-            AuditLog.objects.create(
-                actor=request.user, action="create", app_label="accounts",
-                model_name="User", object_id=str(new_user.pk),
-                object_repr=str(new_user), changes={"created_role": new_user.role},
-            )
-            messages.success(request, f"User '{new_user.username}' created.")
-            return redirect("dashboard:user_list")
-    else:
-        form = StaffUserCreateForm()
-    return render(request, "dashboard/user_form.html", {"form": form, "title": "Create User"})
-
-
-@admin_required
-def user_edit(request, user_id):
-    user_obj = get_object_or_404(User, pk=user_id)
-    if not request.user.can_manage_role(user_obj):
-        messages.error(request, "You cannot edit that user.")
-        return redirect("dashboard:user_list")
-
-    if request.method == "POST":
-        form = StaffUserForm(request.POST, instance=user_obj)
-        if form.is_valid():
-            form.save()
-            AuditLog.objects.create(
-                actor=request.user, action="update", app_label="accounts",
-                model_name="User", object_id=str(user_obj.pk),
-                object_repr=str(user_obj), changes={"updated": user_obj.role},
-            )
-            messages.success(request, "User updated.")
-            return redirect("dashboard:user_list")
-    else:
-        form = StaffUserForm(instance=user_obj)
-
-    return render(request, "dashboard/user_form.html", {"form": form, "title": f"Edit {user_obj.username}"})
-
-
-@admin_required
-def user_delete(request, user_id):
-    user_obj = get_object_or_404(User, pk=user_id)
-    if user_obj == request.user:
-        messages.error(request, "You cannot delete yourself.")
-        return redirect("dashboard:user_list")
-    if not request.user.can_manage_role(user_obj):
-        messages.error(request, "You cannot delete that user.")
-        return redirect("dashboard:user_list")
-
-    if request.method == "POST":
-        name = user_obj.username
-        user_obj.delete()
-        AuditLog.objects.create(
-            actor=request.user, action="delete", app_label="accounts",
-            model_name="User", object_id=str(user_id),
-            object_repr=name, changes={"deleted": name},
-        )
-        messages.success(request, f"User '{name}' deleted.")
-        return redirect("dashboard:user_list")
-    return render(request, "dashboard/user_confirm_delete.html", {"user_obj": user_obj})
-
-
-@admin_required
-@require_POST
-def user_toggle_active(request, user_id):
-    user_obj = get_object_or_404(User, pk=user_id)
-    if user_obj == request.user:
-        messages.error(request, "You cannot deactivate yourself.")
-        return redirect("dashboard:user_list")
-    user_obj.is_active = not user_obj.is_active
-    user_obj.save(update_fields=["is_active"])
-    messages.success(request, f"{user_obj.username} is now {'active' if user_obj.is_active else 'inactive'}.")
-    return redirect("dashboard:user_list")
 
 
 # =========================================================

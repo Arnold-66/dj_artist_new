@@ -6,9 +6,24 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.timezone import localtime
-
+from functools import wraps
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from .forms import EventForm
 from .models import Event
+
+def event_manager_required(view_func):
+    """Only admins and operators can create/edit/delete events."""
+    @wraps(view_func)
+    @login_required(login_url="account_login")
+    def wrapper(request, *args, **kwargs):
+        u = request.user
+        if not (u.is_admin_role or u.is_operator_role):
+            messages.error(request, "You do not have permission to manage events.")
+            return redirect("events:list")
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def event_list(request):
@@ -73,6 +88,7 @@ def event_calendar(request, slug):
 # EVENT MANAGEMENT (staff only)
 # ============================================================
 
+@event_manager_required
 @staff_member_required
 def event_create(request):
     if request.method == "POST":
@@ -94,7 +110,7 @@ def event_create(request):
         },
     )
 
-
+@event_manager_required
 @staff_member_required
 def event_update(request, slug):
     event = get_object_or_404(Event, slug=slug)
@@ -119,7 +135,7 @@ def event_update(request, slug):
         },
     )
 
-
+@event_manager_required
 @staff_member_required
 def event_delete(request, slug):
     event = get_object_or_404(Event, slug=slug)

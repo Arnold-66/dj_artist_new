@@ -5,7 +5,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
+    # Your auth first, at /accounts/
+    path("accounts/", include("apps.accounts.urls", namespace="accounts")),
+
+    # allauth at a different prefix so it never shadows yours
+    path("auth/", include("allauth.urls")),
 
     path("", include("apps.core.urls")),
     path("bookings/", include("apps.bookings.urls")),
