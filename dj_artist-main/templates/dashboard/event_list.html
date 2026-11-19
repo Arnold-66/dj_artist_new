@@ -1,0 +1,51 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dash_breadcrumb %}EVENTS{% endblock %}
+{% block dash_title %}Events{% endblock %}
+
+{% block dash_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="muted m-0">Create, edit and publish event listings.</p>
+  <a href="{% url 'dashboard:event_create' %}" class="btn btn-gold">+ ADD EVENT</a>
+</div>
+
+<div class="table-responsive dashboard-table-wrapper">
+  <table class="table table-dark align-middle">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Artist</th>
+        <th>Date</th>
+        <th>Venue</th>
+        <th>Published</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in events %}
+        <tr>
+          <td><strong>{{ e.title }}</strong></td>
+          <td>{{ e.artist.stage_name|default:"—" }}</td>
+          <td>{{ e.start_at|date:"d M Y H:i" }}</td>
+          <td>{{ e.venue|default:"—" }}{% if e.city_country %}, {{ e.city_country }}{% endif %}</td>
+          <td>
+            {% if e.is_published %}
+              <span class="text-success">● Live</span>
+            {% else %}
+              <span class="text-danger">● Draft</span>
+            {% endif %}
+          </td>
+          <td class="d-flex gap-1 flex-wrap">
+            <a href="{% url 'dashboard:event_edit' e.pk %}" class="btn btn-sm btn-gold">EDIT</a>
+            <a href="{% url 'dashboard:event_delete' e.pk %}" class="btn btn-sm btn-outline-danger">DELETE</a>
+            {% if e.slug %}
+              <a href="{% url 'events:detail' e.slug %}" target="_blank" class="btn btn-sm btn-outline-light">VIEW</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center py-4">No events yet. Add your first one.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

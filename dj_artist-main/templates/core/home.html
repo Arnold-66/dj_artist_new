@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ artist.stage_name|default:"DJoZ" }} | Official Website{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="dj-hero"
+    {% if artist.hero_image %}
+        style="background-image:linear-gradient(90deg,rgba(25,0,55,.42),rgba(25,0,55,.12)),url('{{ artist.hero_image.url }}')"
+    {% endif %}>
+    <div class="container dj-hero-inner">
+        <div class="dj-hero-copy">
+            <p class="hero-kicker">{{ artist.hero_kicker|default:"NEW SINGLE" }}</p>
+            <h1>{{ artist.hero_title|default:"Feel the heart beats" }}</h1>
+            <p>{{ artist.tagline|default:"Let the music take you somewhere unforgettable." }}</p>
+            <a class="round-play" href="/music/" aria-label="Explore music">
+                <i class="fa-solid fa-play"></i>
+            </a>
+        </div>
+
+        <div class="dj-switcher">
+            <label for="dj-switch">CHOOSE A DJ</label>
+            <select id="dj-switch" class="form-select"
+                onchange="if(this.value) window.location.href='/?dj='+encodeURIComponent(this.value)">
+                {% for dj in artists %}
+                    <option value="{{ dj.slug }}" {% if artist.id == dj.id %}selected{% endif %}>
+                        {{ dj.stage_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     ABOUT
+     ============================================================ -->
+<section class="dj-about" id="about">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5">
+                <div class="artist-art">
+                    {% if artist.signature_image %}
+                        <img src="{{ artist.signature_image.url }}" alt="{{ artist.stage_name }}">
+                    {% elif artist.hero_image %}
+                        <img src="{{ artist.hero_image.url }}" alt="{{ artist.stage_name }}">
+                    {% else %}
+                        <div class="art-placeholder"><i class="fa-solid fa-headphones"></i></div>
+                    {% endif %}
+                    <span class="art-shape shape-one"></span>
+                    <span class="art-shape shape-two"></span>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <p class="section-eyebrow">GET TO KNOW THE ARTIST</p>
+                <h2>{{ artist.stage_name|default:"THE DJ" }}</h2>
+                <p class="about-copy">
+                    {{ artist.short_bio|default:artist.tagline|default:"A sound shaped by rhythm, energy and unforgettable moments." }}
+                </p>
+                {% if artist.full_bio %}
+                    <p class="about-copy">{{ artist.full_bio|truncatewords:45 }}</p>
+                {% endif %}
+                <a href="{% if artist_kit %}{{ artist_kit.get_absolute_url }}{% else %}/epk/official/{% endif %}"
+                   class="purple-button">DISCOVER MORE</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     LATEST RELEASES
+     ============================================================ -->
+<section class="latest-releases" id="discography">
+    <div class="container">
+        <div class="section-title-center">
+            <span>THE SOUND</span>
+            <h2>LATEST RELEASES</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for mix in audios|slice:":3" %}
+                <div class="col-md-4">
+                    <article class="release-card">
+                        {% if mix.cover_image %}
+                            <img src="{{ mix.cover_image.url }}" alt="{{ mix.title }}">
+                        {% else %}
+                            <div class="release-placeholder"><i class="fa-solid fa-compact-disc"></i></div>
+                        {% endif %}
+                        <h3>{{ mix.title }}</h3>
+                        <p>{{ mix.platform|default:"MUSIC RELEASE" }}</p>
+                        <a href="{% if mix.spotify_url %}{{ mix.spotify_url }}{% elif mix.youtube_url %}{{ mix.youtube_url }}{% else %}/music/{% endif %}"
+                           target="_blank" rel="noopener">LISTEN NOW ↗</a>
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <p class="empty-note">New music coming soon.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/music/" class="purple-button">VIEW MIXES</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     UPCOMING EVENTS
+     ============================================================ -->
+<section class="tour-section" id="tours">
+    <div class="container">
+        <div class="section-title-center">
+            <span>LIVE &amp; LOUD</span>
+            <h2>UPCOMING EVENTS</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for event in events %}
+                <div class="col-md-4">
+                    <article class="tour-card">
+                        {% if event.poster %}
+                            <img src="{{ event.poster.url }}" alt="{{ event.title }}">
+                        {% endif %}
+                        <div class="tour-info">
+                            <small>{{ event.start_at|date:"d M Y · H:i" }}</small>
+                            <h3>{{ event.title }}</h3>
+                            <p>{{ event.venue }}{% if event.venue %}, {% endif %}{{ event.city_country }}</p>
+                            <a href="{% url 'events:detail' event.slug %}">EVENT DETAILS ↗</a>
+                        </div>
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <p class="empty-note">New tour dates will be announced soon.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/events/" class="purple-button">ALL EVENT DATES</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     YOUTUBE FEED  (FIXED — real embeds + gold/purple card)
+     ============================================================ -->
+<section class="video-feed" id="videos">
+    <div class="container">
+        <div class="section-title-center">
+            <span>WATCH &amp; LISTEN</span>
+            <h2>YOUTUBE FEED</h2>
+        </div>
+
+        <div class="row g-4 video-grid">
+            {% for video in videos|slice:":3" %}
+                <div class="col-md-4">
+                    <article class="home-video-card">
+
+                        <div class="home-video-frame">
+                            {% if video.get_embed_src %}
+                                <iframe
+                                    src="{{ video.get_embed_src }}"
+                                    title="{{ video.title }}"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allowfullscreen
+                                ></iframe>
+                            {% elif video.cover_image %}
+                                <a href="{{ video.youtube_url|default:'#' }}" target="_blank" rel="noopener"
+                                   class="home-video-poster">
+                                    <img src="{{ video.cover_image.url }}" alt="{{ video.title }}">
+                                    <span class="home-video-play"><i class="fa-solid fa-play"></i></span>
+                                </a>
+                            {% else %}
+                                <div class="home-video-empty"><i class="fa-solid fa-video"></i></div>
+                            {% endif %}
+                        </div>
+
+                        <div class="home-video-body">
+                            <h3>{{ video.title }}</h3>
+                            {% if video.get_embed_src %}
+                                <a href="{{ video.get_embed_src }}" target="_blank" rel="noopener"
+                                   class="home-video-link">WATCH ON YOUTUBE ↗</a>
+                            {% elif video.youtube_url %}
+                                <a href="{{ video.youtube_url }}" target="_blank" rel="noopener"
+                                   class="home-video-link">WATCH ON YOUTUBE ↗</a>
+                            {% else %}
+                                <a href="/music/" class="home-video-link">MORE VIDEOS ↗</a>
+                            {% endif %}
+                        </div>
+
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <p class="empty-note">Performance videos will appear here.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/music/" class="purple-button">MORE VIDEOS</a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     BOOKING BAND
+     ============================================================ -->
+<section class="booking-band">
+    <div class="container">
+        <div>
+            <span>BOOKING &amp; ENQUIRIES</span>
+            <h2>LET'S MAKE IT LOUD.</h2>
+        </div>
+        <a href="/bookings/" class="purple-button">CONTACT THE DJ</a>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,162 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | DJoZ{% endblock %}
+
+{% block content %}
+
+<section class="management-dashboard">
+    <div class="container" style="margin-top: 8rem; margin-bottom: 5rem;">
+
+        <div class="dashboard-welcome">
+            <div>
+                <p class="section-label">ADMINISTRATOR ONLY</p>
+                <h1>{{ title|upper }} <span>USER.</span></h1>
+                <p class="dashboard-subtitle">
+                    Create and manage staff accounts, roles and permissions.
+                </p>
+            </div>
+
+            <a href="{% url 'dashboard:user_list' %}" class="btn btn-outline-light">
+                BACK TO USERS
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-9">
+
+                <div class="management-login-form">
+
+                    <form method="post" class="site-form">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label>Username</label>
+                                {{ form.username }}
+                                {{ form.username.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Email</label>
+                                {{ form.email }}
+                                {{ form.email.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>First name</label>
+                                {{ form.first_name }}
+                                {{ form.first_name.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Last name</label>
+                                {{ form.last_name }}
+                                {{ form.last_name.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Role</label>
+                                {{ form.role }}
+                                {{ form.role.errors }}
+
+                                <small class="form-help">
+                                    Administrator = full access · Operator = assigned DJs only ·
+                                    DJ = one artist profile · Press Kit User = public downloads only
+                                </small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>DJ profile (DJ-role users only)</label>
+                                {{ form.dj_profile }}
+                                {{ form.dj_profile.errors }}
+
+                                <small class="form-help">
+                                    Required when role = DJ.
+                                </small>
+                            </div>
+
+                            <div class="col-12">
+                                <label>Assigned DJs (operators only)</label>
+
+                                <div class="operator-dj-grid">
+                                    {% for checkbox in form.managed_artists %}
+                                        <label class="operator-dj-item">
+                                            {{ checkbox.tag }}
+                                            <span>{{ checkbox.choice_label }}</span>
+                                        </label>
+                                    {% empty %}
+                                        <p class="muted">No DJ profiles exist yet.</p>
+                                    {% endfor %}
+                                </div>
+
+                                {{ form.managed_artists.errors }}
+
+                                <small class="form-help">
+                                    Required when role = Operator. Select one or both DJs.
+                                </small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="d-block">Permissions</label>
+
+                                <div class="form-check">
+                                    {{ form.is_staff }}
+                                    <label class="form-check-label">
+                                        Staff (dashboard access)
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label">
+                                        Active
+                                    </label>
+                                </div>
+                            </div>
+
+                            {% if form.password1 %}
+                                <div class="col-md-6">
+                                    <label>Password</label>
+                                    {{ form.password1 }}
+                                    {{ form.password1.errors }}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Confirm Password</label>
+                                    {{ form.password2 }}
+                                    {{ form.password2.errors }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-gold">
+                                SAVE USER
+                            </button>
+
+                            <a href="{% url 'dashboard:user_list' %}"
+                               class="btn btn-outline-light">
+                                CANCEL
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

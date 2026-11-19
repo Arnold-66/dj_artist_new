@@ -1,0 +1,14 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dash_breadcrumb %}CONFIRM DELETION{% endblock %}
+{% block dash_title %}Delete {{ dj.stage_name }}?{% endblock %}
+
+{% block dash_content %}
+<div class="management-login-form text-center">
+  <p style="color:#a89b86;">This also deletes this DJ's linked events, music and EPK records. This action cannot be undone.</p>
+  <form method="post" class="d-flex justify-content-center gap-2 mt-4">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">YES, DELETE</button>
+    <a href="{% url 'dashboard:dj_list' %}" class="btn btn-outline-light">CANCEL</a>
+  </form>
+</div>
+{% endblock %}

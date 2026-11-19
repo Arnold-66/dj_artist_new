@@ -1,0 +1,40 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dash_breadcrumb %}EVENTS{% endblock %}
+{% block dash_title %}{{ title }}{% endblock %}
+
+{% block dash_content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9">
+    <div class="management-login-form">
+      <form method="post" enctype="multipart/form-data" class="site-form" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="col-md-6">
+              <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<span style="color:#c9a45c;">*</span>{% endif %}
+              </label>
+              {{ field }}
+              {% if field.help_text %}
+                <small class="form-help">{{ field.help_text }}</small>
+              {% endif %}
+              {{ field.errors }}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-gold">{{ submit_label|default:"SAVE EVENT" }}</button>
+          <a href="{% url 'dashboard:event_list' %}" class="btn btn-outline-light">CANCEL</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

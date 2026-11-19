@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% block dash_title_full %}Management | DJoZ{% endblock %}{% endblock %}
+
+{% block content %}
+<main class="dashboard-page">
+    <div class="container">
+
+        {# Breadcrumb / small label #}
+        <p class="section-label">{% block dash_breadcrumb %}MANAGEMENT{% endblock %}</p>
+
+        {# Page title #}
+        <h1 class="dash-page-title">
+            {% block dash_title %}{% endblock %}
+        </h1>
+
+        {# Horizontal pill nav — replaces the sidebar #}
+        <nav class="dash-quicknav">
+            <a href="{% url 'dashboard:overview' %}" class="dash-pill">OVERVIEW</a>
+            <a href="{% url 'dashboard:dj_list' %}" class="dash-pill">DJS</a>
+            <a href="{% url 'dashboard:music_list' %}" class="dash-pill">MUSIC</a>
+            <a href="{% url 'dashboard:event_list' %}" class="dash-pill">EVENTS</a>
+            <a href="{% url 'dashboard:epk_list' %}" class="dash-pill">PRESS KITS</a>
+            <a href="{% url 'dashboard:bookings_list' %}" class="dash-pill">BOOKINGS</a>
+            {% if request.user.is_admin_role %}
+                <a href="{% url 'dashboard:user_list' %}" class="dash-pill">USERS</a>
+            {% endif %}
+            <a href="{% url 'music:list' %}" class="dash-pill dash-pill-gold ms-auto">VIEW PUBLIC SITE →</a>
+        </nav>
+
+        {# Actual page content #}
+        {% block dash_content %}{% endblock %}
+
+    </div>
+</main>
+{% endblock %}

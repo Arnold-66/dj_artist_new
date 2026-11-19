@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Not Allowed | DJ ARTIST{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ============================================================
+       NOT ALLOWED PAGE — scoped, self-contained
+       ============================================================ */
+
+    .not-allowed-page {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 160px 0 100px;
+        background: rgb(250, 248, 248);
+        border-bottom: 1px solid #242424;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .not-allowed-page .not-allowed-inner {
+        width: 100%;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .not-allowed-page .section-label {
+        display: inline-block;
+        color: #c9a45c;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        margin-bottom: 22px;
+    }
+
+    .not-allowed-page h1 {
+        color: #1b1b1b;
+        font-size: clamp(48px, 9vw, 96px);
+        font-weight: 900;
+        line-height: 1.02;
+        letter-spacing: -3px;
+        margin: 0 0 24px;
+    }
+
+    .not-allowed-page h1 span {
+        color: #c9a45c;
+    }
+
+    .not-allowed-page .not-allowed-text {
+        color: #191818;
+        font-size: 0.95rem;
+        line-height: 1.8;
+        max-width: 480px;
+        margin: 0 auto 34px;
+    }
+
+    .not-allowed-page .not-allowed-text strong {
+        color: #e5e5e5;
+        font-weight: 700;
+    }
+
+    .not-allowed-page .not-allowed-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .not-allowed-page .btn {
+        padding: 14px 26px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        border-radius: 0;
+    }
+
+    .not-allowed-page .btn-outline-light {
+        border: 1px solid #444;
+        color: #e5e5e5;
+        background: transparent;
+    }
+
+    .not-allowed-page .btn-outline-light:hover {
+        border-color: #c9a45c;
+        color: #c9a45c;
+        background: transparent;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 991.98px) {
+        .not-allowed-page {
+            padding-top: 140px;
+            padding-bottom: 80px;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .not-allowed-page {
+            padding-top: 120px;
+            padding-bottom: 70px;
+        }
+
+        .not-allowed-page h1 {
+            letter-spacing: -1px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .not-allowed-page {
+            padding-top: 100px;
+            padding-bottom: 55px;
+        }
+
+        .not-allowed-page .not-allowed-actions {
+            flex-direction: column;
+        }
+
+        .not-allowed-page .not-allowed-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<section class="not-allowed-page" role="main">
+    <div class="not-allowed-inner">
+
+        <p class="section-label">ACCESS RESTRICTED</p>
+
+        <h1>NOT <span>ALLOWED.</span></h1>
+
+        <p class="not-allowed-text">
+            This page is only available to <strong style="color: black;">press-kit users</strong>.
+            If you believe you should have access, please contact the
+            management team for an invitation.
+        </p>
+
+        <div class="not-allowed-actions">
+            <a href="/" class="btn btn-gold">BACK TO HOME</a>
+            
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

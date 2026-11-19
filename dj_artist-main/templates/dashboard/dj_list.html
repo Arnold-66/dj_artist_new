@@ -1,0 +1,157 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Artist Profiles | DJoZ{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <div class="container" style="margin-top: 8em;">
+
+        <p class="section-label">MANAGEMENT</p>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="dash-page-title">
+                    {% if request.user.is_dj_role %}
+                        My Artist Profile
+                    {% elif request.user.is_operator_role %}
+                        Managed Artists
+                    {% else %}
+                        Artist Profiles
+                    {% endif %}
+                </h1>
+
+                <p class="text-muted">
+                    Manage artist information, branding and social media.
+                </p>
+            </div>
+
+            {% if is_admin_view %}
+                <a href="{% url 'dashboard:dj_create' %}"
+                   class="btn btn-primary">
+                    <i class="fa-solid fa-plus me-2"></i>
+                    ADD ARTIST
+                </a>
+            {% endif %}
+        </div>
+
+      
+
+        {% if djs %}
+            <div class="row g-4">
+
+                {% for dj in djs %}
+                    <div class="col-md-6 col-xl-4">
+
+                        <div class="card h-100 shadow-sm border-0">
+
+                            {% if dj.hero_image %}
+                                <img src="{{ dj.hero_image.url }}"
+                                     class="card-img-top"
+                                     alt="{{ dj.stage_name }}"
+                                     style="height:220px; object-fit:cover;">
+                            {% elif dj.logo %}
+                                <img src="{{ dj.logo.url }}"
+                                     class="card-img-top"
+                                     alt="{{ dj.stage_name }}"
+                                     style="height:220px; object-fit:contain; padding:25px;">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center bg-dark text-white"
+                                     style="height:220px;">
+                                    <i class="fa-solid fa-user-music fa-4x"></i>
+                                </div>
+                            {% endif %}
+
+                            <div class="card-body">
+
+                                <h5 class="card-title">
+                                    {{ dj.stage_name }}
+                                </h5>
+
+                                <p class="text-muted small">
+                                    {{ dj.tagline|default:"No tagline added yet." }}
+                                </p>
+
+                                <hr>
+
+                                {% with owner=dj.owner_user %}
+                                    <p class="small mb-2">
+                                        <strong>DJ Account:</strong>
+                                        {% if owner %}
+                                            {{ owner.username }}
+                                        {% else %}
+                                            <span class="text-warning">Not assigned</span>
+                                        {% endif %}
+                                    </p>
+                                {% endwith %}
+
+                                <p class="small mb-3">
+                                    <strong>Operators:</strong>
+                                    {{ dj.operators.count }}
+                                </p>
+
+                                <div class="d-flex flex-wrap gap-2">
+
+                                    <a href="{% url 'dashboard:dj_edit' dj.pk %}"
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fa-solid fa-pen me-1"></i>
+                                        EDIT PROFILE
+                                    </a>
+
+                                    <a href="/?dj={{ dj.slug|urlencode }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa-solid fa-eye me-1"></i>
+                                        VIEW WEBSITE
+                                    </a>
+
+                                    {% if is_admin_view %}
+                                        <a href="{% url 'dashboard:dj_delete' dj.pk %}"
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="fa-solid fa-trash me-1"></i>
+                                            DELETE
+                                        </a>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="text-center py-5">
+                <i class="fa-solid fa-user-music fa-3x mb-3 text-muted"></i>
+
+                <h4>No artist profiles found</h4>
+
+                <p class="text-muted">
+                    {% if request.user.is_dj_role %}
+                        Your account has not yet been assigned an artist profile.
+                        Please contact your administrator.
+                    {% elif request.user.is_operator_role %}
+                        You have not yet been assigned an artist to manage.
+                    {% else %}
+                        Create your first artist profile to get started.
+                    {% endif %}
+                </p>
+
+                {% if is_admin_view %}
+                    <a href="{% url 'dashboard:dj_create' %}"
+                       class="btn btn-primary">
+                        ADD FIRST ARTIST
+                    </a>
+                {% endif %}
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

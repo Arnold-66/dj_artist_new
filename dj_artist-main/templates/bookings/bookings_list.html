@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings | DJ ARTIST{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ============================================================
+       BOOKINGS LIST — FULL PAGE STYLES (scoped, self-contained)
+       ============================================================ */
+
+    /* ---------- Page shell & top spacing ---------- */
+    .management-dashboard.bookings-list-page {
+        margin-top: 0 !important;
+        padding-top: 130px !important;
+        padding-bottom: 80px !important;
+        min-height: 0 !important;
+        background: #f7f8fa;
+    }
+
+    .management-dashboard.bookings-list-page > .container {
+        margin-top: 0 !important;
+        max-width: 1240px;
+    }
+
+    /* ---------- Welcome header ---------- */
+    .bookings-list-page .dashboard-welcome {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 36px;
+        flex-wrap: wrap;
+    }
+
+    .bookings-list-page .dashboard-welcome .section-label {
+        color: #b18b43;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        margin-bottom: 8px;
+    }
+
+    .bookings-list-page .dashboard-welcome h1 {
+        color: #181818;
+        font-size: clamp(26px, 4vw, 40px);
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin: 0 0 8px;
+    }
+
+    .bookings-list-page .dashboard-welcome h1 span {
+        color: #c9a45c;
+    }
+
+    .bookings-list-page .dashboard-subtitle {
+        color: #777;
+        font-size: 0.88rem;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* ---------- Stat cards (light theme override) ---------- */
+    .bookings-list-page .stat-card {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid #ececec;
+        border-radius: 16px;
+        padding: 24px 26px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+        height: 100%;
+    }
+
+    .bookings-list-page .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #c9a45c;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .bookings-list-page .stat-card:hover {
+        border-color: #e7d6b2;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+        transform: translateY(-3px);
+    }
+
+    .bookings-list-page .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .bookings-list-page .stat-card p {
+        margin: 0 0 10px;
+        color: #888;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .bookings-list-page .stat-card h2 {
+        margin: 0;
+        color: #1a1a1a;
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        line-height: 1;
+    }
+
+    /* ---------- Section heading ---------- */
+    .bookings-list-page .dashboard-section-heading {
+        margin: 40px 0 22px;
+    }
+
+    .bookings-list-page .dashboard-section-heading .section-label {
+        color: #b18b43;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .bookings-list-page .dashboard-section-heading h2 {
+        margin: 0;
+        color: #1a1a1a;
+        font-size: clamp(24px, 3vw, 34px);
+        font-weight: 850;
+        letter-spacing: -0.7px;
+    }
+
+    .bookings-list-page .dashboard-section-heading h2 span {
+        color: #c9a45c;
+    }
+
+    /* ---------- Filter bar ---------- */
+    .bookings-list-page .booking-filter-bar {
+        background: #ffffff;
+        border: 1px solid #ececec;
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .bookings-list-page .booking-filter-bar label {
+        display: block;
+        color: #333;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .bookings-list-page .booking-filter-bar select,
+    .bookings-list-page .booking-filter-bar .form-select {
+        width: 100%;
+        padding: 11px 36px 11px 13px;
+        background-color: #fff;
+        background-image:
+            linear-gradient(45deg, transparent 50%, #c9a45c 50%),
+            linear-gradient(135deg, #c9a45c 50%, transparent 50%);
+        background-position:
+            calc(100% - 20px) calc(50% - 2px),
+            calc(100% - 14px) calc(50% - 2px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        color: #222;
+        font-size: 0.92rem;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .bookings-list-page .booking-filter-bar select:focus,
+    .bookings-list-page .booking-filter-bar .form-select:focus {
+        outline: none;
+        border-color: #c9a45c;
+        box-shadow: 0 0 0 3px rgba(201, 164, 92, 0.15);
+    }
+
+    .bookings-list-page .booking-filter-bar .btn {
+        padding: 11px 22px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        border-radius: 8px;
+    }
+
+    .bookings-list-page .booking-filter-bar .btn-outline-light {
+        background: #fafafa;
+        border: 1px solid #ddd;
+        color: #333;
+    }
+
+    .bookings-list-page .booking-filter-bar .btn-outline-light:hover {
+        background: #222;
+        color: #fff;
+        border-color: #222;
+    }
+
+    /* ---------- Table wrapper ---------- */
+    .bookings-list-page .dashboard-table-wrapper {
+        background: #ffffff;
+        border: 1px solid #ececec;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: #2b2b2b;
+        --bs-table-border-color: #efefef;
+        --bs-table-hover-bg: #fcfaf5;
+        --bs-table-hover-color: #1a1a1a;
+        margin-bottom: 0;
+        color: #2b2b2b;
+        background: transparent;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table thead th {
+        background: #fafafa;
+        color: #6b6b6b;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 16px 18px;
+        border-bottom: 1px solid #ececec;
+        border-top: none;
+        white-space: nowrap;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table tbody td {
+        background: transparent;
+        color: #2b2b2b;
+        padding: 16px 18px;
+        border-bottom: 1px solid #f1f1f1;
+        vertical-align: middle;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table tbody tr:hover td {
+        background: #fcfaf5;
+    }
+
+    .bookings-list-page .dashboard-table-wrapper .table small {
+        display: block;
+        color: #999;
+        font-size: 0.76rem;
+        margin-top: 2px;
+        overflow-wrap: anywhere;
+    }
+
+    /* ---------- Status pill ---------- */
+    .bookings-list-page .booking-status {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #fbf5e9;
+        border: 1px solid #f0e3c8;
+        border-radius: 30px;
+        color: #9a762f;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    /* ---------- VIEW button ---------- */
+    .bookings-list-page .btn-gold.btn-sm {
+        padding: 8px 16px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    /* ---------- Empty state ---------- */
+    .bookings-list-page .bookings-empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #888;
+        font-size: 0.92rem;
+    }
+
+    .bookings-list-page .bookings-empty-state strong {
+        display: block;
+        color: #1a1a1a;
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 991.98px) {
+        .management-dashboard.bookings-list-page {
+            padding-top: 120px !important;
+            padding-bottom: 70px !important;
+        }
+
+        .bookings-list-page .dashboard-table-wrapper .table thead th,
+        .bookings-list-page .dashboard-table-wrapper .table tbody td {
+            padding: 12px 14px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .management-dashboard.bookings-list-page {
+            padding-top: 100px !important;
+            padding-bottom: 55px !important;
+        }
+
+        .bookings-list-page .dashboard-welcome {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .bookings-list-page .dashboard-welcome .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        .bookings-list-page .booking-filter-bar {
+            padding: 16px;
+        }
+
+        .bookings-list-page .booking-filter-bar .btn {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        /* Keep table horizontal-scrolling on mobile */
+        .bookings-list-page .dashboard-table-wrapper .table {
+            min-width: 720px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .management-dashboard.bookings-list-page {
+            padding-top: 92px !important;
+            padding-bottom: 45px !important;
+        }
+
+        .bookings-list-page .stat-card {
+            padding: 18px 20px;
+        }
+
+        .bookings-list-page .stat-card h2 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+<section class="management-dashboard bookings-list-page">
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="dashboard-welcome">
+            <div>
+                <p class="section-label">MANAGEMENT CENTRE</p>
+                <h1>BOOKING <span>INQUIRIES.</span></h1>
+                <p class="dashboard-subtitle">
+                    Review booking requests and manage client relationships.
+                </p>
+            </div>
+
+            <a href="{% url 'dashboard:overview' %}" class="btn btn-outline-light btn-sm">
+                ← BACK TO DASHBOARD
+            </a>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p>Total Inquiries</p>
+                    <h2>{{ total_count }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p>New Inquiries</p>
+                    <h2>{{ new_count }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <p>Confirmed Bookings</p>
+                    <h2>{{ confirmed_count }}</h2>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION HEADING -->
+        <div class="dashboard-section-heading">
+            <p class="section-label">CLIENT REQUESTS</p>
+            <h2>ALL <span>BOOKINGS.</span></h2>
+        </div>
+
+        <!-- FILTER BAR -->
+        <form method="get" class="booking-filter-bar">
+            <div class="row g-2 align-items-end">
+
+                <div class="col-md-4">
+                    <label for="status">Filter by status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All bookings</option>
+                        {% for value, label in statuses %}
+                            <option value="{{ value }}"
+                                {% if selected_status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- ✅ ADD THIS BLOCK HERE -->
+                <div class="col-md-4">
+                    <label for="artist">Filter by artist</label>
+                    <select name="artist" id="artist" class="form-select">
+                        <option value="">All artists</option>
+                        {% for a in artists %}
+                            <option value="{{ a.slug }}"
+                                {% if selected_artist == a.slug %}selected{% endif %}>
+                                {{ a.stage_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- ✅ END -->
+
+                <div class="col-md-4 d-flex flex-wrap gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-gold">FILTER</button>
+                    <a href="{% url 'bookings:bookings_list' %}" class="btn btn-outline-light">RESET</a>
+                </div>
+
+            </div>
+        </form>
+
+        <!-- BOOKINGS TABLE -->
+        <div class="table-responsive dashboard-table-wrapper">
+            <table class="table align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Artist</th> 
+                        <th>Organization</th>
+                        <th>Contact</th>
+                        <th>Event Type</th>
+                        <th>Event Date</th>
+                        <th>Status</th>
+                        <th>Received</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for booking in bookings %}
+
+                        <tr>
+                            <td>
+                                {% if booking.artist %}
+                                    <span class="booking-status">
+                                        {{ booking.artist.stage_name }}
+                                    </span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ booking.organization }}</td>
+                            <td>
+                                {{ booking.contact_name }}
+                                <small>{{ booking.email }}</small>
+                            </td>
+                            <td>{{ booking.get_event_type_display }}</td>
+                            <td>{{ booking.event_date|date:"d M Y" }}</td>
+                            <td>
+                                <span class="booking-status">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ booking.created_at|date:"d M Y" }}</td>
+                            <td>
+                                <a href="{% url 'bookings:booking_detail' booking.pk %}"
+                                   class="btn btn-sm btn-gold">
+                                    VIEW
+                                </a>
+                            </td>
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="7">
+                                <div class="bookings-empty-state">
+                                    <strong>No booking inquiries found</strong>
+                                    When new requests come in, they'll appear here.
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dash_breadcrumb %}CONFIRM DELETION{% endblock %}
+{% block dash_title %}Delete user?{% endblock %}
+
+{% block dash_content %}
+<div class="management-login-form text-center">
+  <p style="color:#a89b86;">
+    Are you sure you want to delete <strong style="color:#c9a45c;">{{ user_obj.username }}</strong>
+    ({{ user_obj.get_role_display }})? This action cannot be undone.
+  </p>
+  <form method="post" class="d-flex justify-content-center gap-2 mt-4">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">YES, DELETE</button>
+    <a href="{% url 'dashboard:user_list' %}" class="btn btn-outline-light">CANCEL</a>
+  </form>
+</div>
+{% endblock %}
