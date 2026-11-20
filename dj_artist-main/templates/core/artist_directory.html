@@ -1,106 +1,73 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Our Artists | DJoZ{% endblock %}
+{% block title %}Our Artists | The Roster{% endblock %}
 {% block meta_description %}Browse our roster of DJs and artists. Pick your favorite and explore their music, events and bookings.{% endblock %}
 
 {% block content %}
-<section class="page-hero artist-directory-hero">
-    <div class="container">
-        <p class="section-label">THE ROSTER</p>
-        <h1>Choose <span>Your Artist</span></h1>
-        <p>
-            Select an artist to enter their world — music, events, videos and bookings.
-        </p>
+<section class="split-artist-hero">
+    <!-- Left DJ -->
+    {% with artists.0 as left_artist %}
+    <a href="{% url 'core:home' left_artist.slug %}"
+       class="split-half split-left"
+       style="--dj-accent: {{ left_artist.theme_color|default:'#c9a45c' }};"
+       aria-label="Enter {{ left_artist.stage_name }}'s site">
+        <div class="split-bg"
+             {% if left_artist.hero_image %}
+                 style="background-image: url('{{ left_artist.hero_image.url }}');"
+             {% elif left_artist.logo %}
+                 style="background-image: url('{{ left_artist.logo.url }}');"
+             {% endif %}>
+        </div>
+        <div class="split-overlay"></div>
+        <div class="split-content">
+            <p class="split-label">THE ROSTER</p>
+            <h2 class="split-name">{{ left_artist.stage_name }}</h2>
+            <p class="split-tagline">{{ left_artist.tagline|default:"Music. Culture. Unforgettable." }}</p>
+            <span class="split-enter">
+                ENTER <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </span>
+        </div>
+    </a>
+    {% endwith %}
 
-        <form method="get" class="artist-search-form" role="search">
-            <input
-                type="search"
-                name="q"
-                value="{{ search_query }}"
-                placeholder="Search by stage name…"
-                aria-label="Search artists"
-            >
-            <button type="submit" class="btn btn-gold">SEARCH</button>
-        </form>
-    </div>
+    <!-- Right DJ -->
+    {% with artists.1 as right_artist %}
+    <a href="{% url 'core:home' right_artist.slug %}"       class="split-half split-right"
+       style="--dj-accent: {{ right_artist.theme_color|default:'#c9a45c' }};"
+       aria-label="Enter {{ right_artist.stage_name }}'s site">
+        <div class="split-bg"
+             {% if right_artist.hero_image %}
+                 style="background-image: url('{{ right_artist.hero_image.url }}');"
+             {% elif right_artist.logo %}
+                 style="background-image: url('{{ right_artist.logo.url }}');"
+             {% endif %}>
+        </div>
+        <div class="split-overlay"></div>
+        <div class="split-content">
+            <p class="split-label">THE ROSTER</p>
+            <h2 class="split-name">{{ right_artist.stage_name }}</h2>
+            <p class="split-tagline">{{ right_artist.tagline|default:"Music. Culture. Unforgettable." }}</p>
+            <span class="split-enter">
+                ENTER <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </span>
+        </div>
+    </a>
+    {% endwith %}
 </section>
 
-<section class="content-section artist-directory-section">
+<!-- Fallback for no artists / search (hidden unless needed) -->
+{% if not artists %}
+<section class="split-empty-state">
     <div class="container">
-
-        {% if artists %}
-            <div class="artist-roster">
-                {% for artist in artists %}
-                    <a
-                        href="/?dj={{ artist.slug|urlencode }}"
-                        class="artist-row"
-                        aria-label="Enter {{ artist.stage_name }}'s site"
-                        style="--dj-accent: {{ artist.theme_color|default:'#c9a45c' }};"
-                    >
-                        <div class="artist-row-image">
-                            {% if artist.hero_image %}
-                                <img
-                                    src="{{ artist.hero_image.url }}"
-                                    alt="{{ artist.stage_name }}"
-                                    loading="lazy"
-                                >
-                            {% elif artist.logo %}
-                                <img
-                                    src="{{ artist.logo.url }}"
-                                    alt="{{ artist.stage_name }}"
-                                    loading="lazy"
-                                    class="artist-row-logo"
-                                >
-                            {% else %}
-                                <div class="artist-row-placeholder">
-                                    {{ artist.stage_name|first|upper }}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="artist-row-body">
-                            <p class="section-label" style="color: #000;">ARTIST</p>
-                            <h2>{{ artist.stage_name }}</h2>
-                            {% if artist.tagline %}
-                                <p class="artist-row-genre" style="color: #6d6d6d;">{{ artist.tagline }}</p>
-                            {% endif %}
-                            {% if artist.short_bio %}
-                                <p class="artist-row-tagline" style="color: #6d6d6d;;">{{ artist.short_bio|truncatewords:22 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div class="artist-row-price">
-                            <span class="price-label">BOOKING</span>
-                            <strong>On request</strong>
-                        </div>
-
-                        <div class="artist-row-cta">
-                            <span class="artist-enter">ENTER</span>
-                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="events-empty-state">
-                <p class="section-label">NO ARTISTS YET</p>
-                <h2>Nothing to <span>show</span> right now</h2>
-                <p>
-                    {% if search_query %}
-                        No artists match “{{ search_query }}”. Try a different name.
-                    {% else %}
-                        Artists will appear here as soon as they're added.
-                    {% endif %}
-                </p>
-                {% if search_query %}
-                    <a href="{% url 'core:artist_directory' %}" class="btn btn-gold">CLEAR SEARCH</a>
-                {% endif %}
-            </div>
-        {% endif %}
-
+        <div class="events-empty-state">
+            <p class="section-label">NO ARTISTS YET</p>
+            <h2>Nothing to <span>show</span> right now</h2>
+            <p>Artists will appear here as soon as they're added.</p>
+        </div>
     </div>
 </section>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}

@@ -19,21 +19,36 @@ def selected_artist(request):
         request.session["selected_dj"] = artist.pk
     return artist
 
-def home(request):
-    artist = selected_artist(request)
-    events = Event.objects.filter(is_published=True).filter(artist=artist).order_by("start_at")[:3] if artist and Event.objects.filter(artist__isnull=False).exists() else Event.objects.filter(is_published=True).order_by("start_at")[:3]
-    mixes = Mix.objects.filter(is_published=True, artist=artist)[:3] if artist and Mix.objects.filter(artist__isnull=False).exists() else Mix.objects.filter(is_published=True)[:3]
-    videos = Mix.objects.filter(is_published=True, media_type="video", artist=artist) if artist and Mix.objects.filter(artist__isnull=False).exists() else Mix.objects.filter(is_published=True, media_type="video")
-    audios = Mix.objects.filter(is_published=True, media_type="audio", artist=artist) if artist and Mix.objects.filter(artist__isnull=False).exists() else Mix.objects.filter(is_published=True, media_type="audio")
+def home(request, slug):
+    """Home page for a specific artist, selected by slug in the URL."""
+    artist = get_object_or_404(ArtistProfile, slug=slug)
+
+    # Remember selection for this session (optional but harmless)
+    request.session["selected_dj"] = artist.pk
+
+    events = Event.objects.filter(is_published=True, artist=artist).order_by("start_at")[:3]
+    mixes  = Mix.objects.filter(is_published=True, artist=artist)[:3]
+    videos = Mix.objects.filter(is_published=True, media_type="video", artist=artist)
+    audios = Mix.objects.filter(is_published=True, media_type="audio", artist=artist)
+
     artists = ArtistProfile.objects.order_by("id")
-    kit = PressKit.objects.filter(artist=artist, is_published=True).first() if artist else None
-    return render(request, "core/home.html", {"artist": artist, "artists": artists, "events": events, "mixes": mixes, "videos": videos, "audios": audios, "artist_kit": kit})
+    kit = PressKit.objects.filter(artist=artist, is_published=True).first()
+
+    return render(request, "core/home.html", {
+        "artist": artist,
+        "artists": artists,
+        "events": events,
+        "mixes": mixes,
+        "videos": videos,
+        "audios": audios,
+        "artist_kit": kit,
+    })
 
 
 def artist_directory(request):
     """
-    Public directory of all artists.
-    Each row links to the home page with ?dj=<slug>.
+    Public directory of all artists — this is the landing page.
+    Each row links to the artist's home page by slug.
     """
     artists = ArtistProfile.objects.order_by("stage_name")
 
@@ -45,8 +60,7 @@ def artist_directory(request):
             | Q(short_bio__icontains=q)
         )
 
-    return render(
-        request,
-        "core/artist_directory.html",
-        {"artists": artists, "search_query": q},
-    )
+    return render(request, "core/artist_directory.html", {
+        "artists": artists,
+        "search_query": q,
+    })

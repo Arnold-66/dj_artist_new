@@ -1,7 +1,7 @@
 ```django
 {% extends "base.html" %}
 
-{% block title %}Management Dashboard | DJ ARTIST{% endblock %}
+{% block title %}Management Dashboard | The Roster{% endblock %}
 
 {% block content %}
 
@@ -20,7 +20,7 @@
                 </h1>
 
                 <p class="dashboard-subtitle">
-                    {{ staff_role }} · Manage your DJ ARTIST website from here.
+                    {{ staff_role }} · Manage your The Roster website from here.
                 </p>
             </div>
 
@@ -132,7 +132,7 @@
                 <div class="col-12 col-sm-6 col-lg-4">
                     <a href="{% url 'dashboard:dj_list' %}" class="management-card">
                         <h3 class="webhead">Artist Management</h3>
-                        <p>View and manage DJ artist profiles and assignments.</p>
+                        <p>View and manage The Roster profiles and assignments.</p>
                         <span>MANAGE ARTISTS →</span>
                     </a>
                 </div>
