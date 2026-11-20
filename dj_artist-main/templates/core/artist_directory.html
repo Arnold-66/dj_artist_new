@@ -1,73 +1,104 @@
+
 {% extends "base.html" %}
 {% load static %}
 
 {% block title %}Our Artists | The Roster{% endblock %}
-{% block meta_description %}Browse our roster of DJs and artists. Pick your favorite and explore their music, events and bookings.{% endblock %}
+
+{% block meta_description %}
+Browse our roster of DJs and artists. Pick your favorite and explore their music, events and bookings.
+{% endblock %}
 
 {% block content %}
+
 <section class="split-artist-hero">
-    <!-- Left DJ -->
-    {% with artists.0 as left_artist %}
-    <a href="{% url 'core:home' left_artist.slug %}"
-       class="split-half split-left"
-       style="--dj-accent: {{ left_artist.theme_color|default:'#c9a45c' }};"
-       aria-label="Enter {{ left_artist.stage_name }}'s site">
-        <div class="split-bg"
-             {% if left_artist.hero_image %}
+
+    {% if artists %}
+
+        {# LEFT DJ #}
+        {% with artists.0 as left_artist %}
+        <a href="{% url 'core:home' left_artist.slug %}"
+           class="split-half split-left"
+           style="--dj-accent: {{ left_artist.theme_color|default:'#c9a45c' }};"
+           aria-label="Enter {{ left_artist.stage_name }}'s site">
+
+            <div class="split-bg"
+                 {% if left_artist.hero_image %}
                  style="background-image: url('{{ left_artist.hero_image.url }}');"
-             {% elif left_artist.logo %}
+                 {% elif left_artist.logo %}
                  style="background-image: url('{{ left_artist.logo.url }}');"
-             {% endif %}>
-        </div>
-        <div class="split-overlay"></div>
-        <div class="split-content">
-            <p class="split-label">THE ROSTER</p>
-            <h2 class="split-name">{{ left_artist.stage_name }}</h2>
-            <p class="split-tagline">{{ left_artist.tagline|default:"Music. Culture. Unforgettable." }}</p>
-            <span class="split-enter">
-                ENTER <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-            </span>
-        </div>
-    </a>
-    {% endwith %}
+                 {% endif %}>
+            </div>
 
-    <!-- Right DJ -->
-    {% with artists.1 as right_artist %}
-    <a href="{% url 'core:home' right_artist.slug %}"       class="split-half split-right"
-       style="--dj-accent: {{ right_artist.theme_color|default:'#c9a45c' }};"
-       aria-label="Enter {{ right_artist.stage_name }}'s site">
-        <div class="split-bg"
-             {% if right_artist.hero_image %}
-                 style="background-image: url('{{ right_artist.hero_image.url }}');"
-             {% elif right_artist.logo %}
-                 style="background-image: url('{{ right_artist.logo.url }}');"
-             {% endif %}>
+            <div class="split-overlay"></div>
+
+            <div class="split-content">
+                <p class="split-label">THE ROSTER</p>
+                <h2 class="split-name">{{ left_artist.stage_name }}</h2>
+
+                <p class="split-tagline">
+                    {{ left_artist.tagline|default:"Music. Culture. Unforgettable." }}
+                </p>
+
+                <span class="split-enter">
+                    ENTER
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </span>
+            </div>
+        </a>
+        {% endwith %}
+
+
+        {# RIGHT DJ #}
+        {% if artists|length > 1 %}
+            {% with artists.1 as right_artist %}
+            <a href="{% url 'core:home' right_artist.slug %}"
+               class="split-half split-right"
+               style="--dj-accent: {{ right_artist.theme_color|default:'#c9a45c' }};"
+               aria-label="Enter {{ right_artist.stage_name }}'s site">
+
+                <div class="split-bg"
+                     {% if right_artist.hero_image %}
+                     style="background-image: url('{{ right_artist.hero_image.url }}');"
+                     {% elif right_artist.logo %}
+                     style="background-image: url('{{ right_artist.logo.url }}');"
+                     {% endif %}>
+                </div>
+
+                <div class="split-overlay"></div>
+
+                <div class="split-content">
+                    <p class="split-label">THE ROSTER</p>
+                    <h2 class="split-name">{{ right_artist.stage_name }}</h2>
+
+                    <p class="split-tagline">
+                        {{ right_artist.tagline|default:"Music. Culture. Unforgettable." }}
+                    </p>
+
+                    <span class="split-enter">
+                        ENTER
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </span>
+                </div>
+            </a>
+            {% endwith %}
+        {% endif %}
+
+    {% else %}
+
+        <div class="split-empty-state">
+            <div class="container">
+                <div class="events-empty-state">
+                    <p class="section-label">NO ARTISTS YET</p>
+                    <h2>Nothing to <span>show</span> right now</h2>
+                    <p>Artists will appear here as soon as they're added.</p>
+                </div>
+            </div>
         </div>
-        <div class="split-overlay"></div>
-        <div class="split-content">
-            <p class="split-label">THE ROSTER</p>
-            <h2 class="split-name">{{ right_artist.stage_name }}</h2>
-            <p class="split-tagline">{{ right_artist.tagline|default:"Music. Culture. Unforgettable." }}</p>
-            <span class="split-enter">
-                ENTER <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-            </span>
-        </div>
-    </a>
-    {% endwith %}
+
+    {% endif %}
+
 </section>
 
-<!-- Fallback for no artists / search (hidden unless needed) -->
-{% if not artists %}
-<section class="split-empty-state">
-    <div class="container">
-        <div class="events-empty-state">
-            <p class="section-label">NO ARTISTS YET</p>
-            <h2>Nothing to <span>show</span> right now</h2>
-            <p>Artists will appear here as soon as they're added.</p>
-        </div>
-    </div>
-</section>
-{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}

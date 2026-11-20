@@ -1,186 +1,295 @@
+
 {% load static %}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{% block title %}The Roster{% endblock %}</title>
+
     <meta name="description" content="Official DJ website, music, events, bookings and electronic press kit.">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/player.css' %}">
 </head>
+
 <body style="--dj-accent:{% if artist and artist.theme_color %}{{ artist.theme_color }}{% else %}#5b00c8{% endif %}">
 
+{% with directory_url="core:artist_directory" %}
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="/">
-            {% if artist %}{{ artist.stage_name }}{% else %}The Roster{% endif %}
+
+        <a class="navbar-brand"
+           href="{% if artist %}{% url 'core:home' artist.slug %}{% else %}{% url directory_url %}{% endif %}">
+            {% if artist %}
+                {{ artist.stage_name }}
+            {% else %}
+                The Roster
+            {% endif %}
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#nav"
+                aria-controls="nav"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="nav">
             <ul class="navbar-nav ms-auto align-items-lg-center">
 
-                {# ---------- PUBLIC NAV ---------- #}
+                {# HOME #}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'core:artist_directory' %}">HOME</a>
-                </li>
-                <!-- <li class="nav-item"><a class="nav-link" href="/">HOME</a></li> -->
-                <li class="nav-item"><a class="nav-link" href="/#about">ABOUT</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'music:list' %}">MUSIC</a></li>
-                <li class="nav-item"><a class="nav-link" href="/events/">EVENTS</a></li>
-                <li class="nav-item"><a class="nav-link" href="/#videos">VIDEOS</a></li>
-                <li class="nav-item"><a class="nav-link" href="/epk/official/">EPK</a></li>
-                <li class="nav-item"><a class="nav-link" href="/bookings/">CONTACT</a></li>
-
-                {# ---------- SOCIAL ICONS ---------- #}
-                <li class="nav-item">
-                    {% if artist and artist.facebook_url %}
-                        <a class="nav-link" href="{{ artist.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">
-                            <i class="fa-brands fa-facebook-f"></i>
-                        </a>
-                    {% endif %}
-                </li>
-                <li class="nav-item">
-                    {% if artist and artist.instagram_url %}
-                        <a class="nav-link" href="{{ artist.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">
-                            <i class="fa-brands fa-instagram"></i>
-                        </a>
-                    {% endif %}
-                </li>
-                <li class="nav-item">
-                    {% if artist and artist.youtube_url %}
-                        <a class="nav-link" href="{{ artist.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">
-                            <i class="fa-brands fa-youtube"></i>
-                        </a>
-                    {% endif %}
-                </li>
-                 <li class="nav-item">
-                    {% if artist and artist.tiktok_url %}
-                        <a class="nav-link" href="{{ artist.tiktok_url }}" target="_blank" rel="noopener" aria-label="Tiktok">
-                            <i class="fa-brands fa-tiktok"></i>
-                        </a>
-                    {% endif %}
-                </li>
-                <li class="nav-item">
-                    {% if artist and artist.phone %}
-                        <a class="nav-link"
-                        href="tel:{{ artist.phone }}"
-                        aria-label="Call {{ artist.name }}">
-                            <i class="fa-solid fa-phone"></i>
-                        </a>
-                    {% endif %}
+                    <a class="nav-link" href="{% url 'core:artist_directory' %}">
+                        HOME
+                    </a>
                 </li>
 
-                {# ---------- DOWNLOAD HISTORY (any logged-in user) ---------- #}
-                {% if request.user.is_authenticated %}
+                {# ABOUT #}
+                {% if artist %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'downloads:history' %}">
-                            <i class="fa-solid fa-download me-1"></i>DOWNLOADS
+                        <a class="nav-link" href="{% url 'core:home' artist.slug %}#about">
+                            ABOUT
                         </a>
                     </li>
+                    {% endif %}
+
+                {# MUSIC #}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'music:list' %}">
+                        MUSIC
+                    </a>
+                </li>
+
+                {# EVENTS #}
+                <li class="nav-item">
+                    <a class="nav-link" href="/events/">
+                        EVENTS
+                    </a>
+                </li>
+
+                {# VIDEOS #}
+                {% if artist %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:home' artist.slug %}#videos">
+                        VIDEOS
+                    </a>
+                </li>
                 {% endif %}
 
-                {# ---------- DASHBOARD (admin, operator, DJ only) ---------- #}
+                {# EPK #}
+                <li class="nav-item">
+                    <a class="nav-link" href="/epk/official/">
+                        EPK
+                    </a>
+                </li>
+
+                {# CONTACT #}
+                <li class="nav-item">
+                    <a class="nav-link" href="/bookings/">
+                        CONTACT
+                    </a>
+                </li>
+
+                {# SOCIAL LINKS #}
+                {% if artist and artist.facebook_url %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ artist.facebook_url }}"
+                       target="_blank"
+                       rel="noopener"
+                       aria-label="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if artist and artist.instagram_url %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ artist.instagram_url }}"
+                       target="_blank"
+                       rel="noopener"
+                       aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if artist and artist.youtube_url %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ artist.youtube_url }}"
+                       target="_blank"
+                       rel="noopener"
+                       aria-label="YouTube">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if artist and artist.tiktok_url %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ artist.tiktok_url }}"
+                       target="_blank"
+                       rel="noopener"
+                       aria-label="TikTok">
+                        <i class="fa-brands fa-tiktok"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if artist and artist.phone %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="tel:{{ artist.phone }}"
+                       aria-label="Call {{ artist.stage_name }}">
+                        <i class="fa-solid fa-phone"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {# DOWNLOAD HISTORY #}
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'downloads:history' %}">
+                        <i class="fa-solid fa-download me-1"></i>
+                        DOWNLOADS
+                    </a>
+                </li>
+                {% endif %}
+
+                {# DASHBOARD #}
                 {% if request.user.is_authenticated %}
                     {% if request.user.is_superuser or request.user.is_admin_role or request.user.is_operator_role or request.user.is_dj_role %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard:overview' %}">
-                                <i class="fa-solid fa-gauge-high me-1"></i>DASHBOARD
-                            </a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:overview' %}">
+                            <i class="fa-solid fa-gauge-high me-1"></i>
+                            DASHBOARD
+                        </a>
+                    </li>
                     {% endif %}
                 {% endif %}
 
-                {# ---------- AUTH ---------- #}
+                {# AUTHENTICATION #}
                 {% if request.user.is_authenticated %}
-                    <li class="nav-item">
-                        <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="nav-link btn btn-link p-0" style="text-decoration:none;">
-                                LOGOUT
-                            </button>
-                        </form>
-                    </li>
+                <li class="nav-item">
+                    <form method="post"
+                          action="{% url 'accounts:logout' %}"
+                          class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="nav-link btn btn-link p-0"
+                                style="text-decoration:none;">
+                            LOGOUT
+                        </button>
+                    </form>
+                </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">LOGIN</a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:login' %}">
+                        LOGIN
+                    </a>
+                </li>
                 {% endif %}
 
             </ul>
         </div>
     </div>
 </nav>
+{% endwith %}
 
 <main>
     {% if messages %}
-        <div class="container messages mt-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
+    <div class="container messages mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+             role="alert">
+            {{ message }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
         </div>
+        {% endfor %}
+    </div>
     {% endif %}
+
     {% block content %}{% endblock %}
 </main>
 
 <footer class="sinc-footer">
     <div class="container">
         <div class="row gy-5">
+
             <div class="col-lg-4 sinc-brand">
                 <h2>Sinc</h2>
                 <p>Discover events, book tickets and run your own, all from one app.</p>
+
                 <div class="sinc-social">
                     <a href="https://x.com/sinc_today">X</a>
                     <a href="https://www.instagram.com/sinc.events">Instagram</a>
                     <a href="https://www.linkedin.com/company/sinc-today">LinkedIn</a>
                 </div>
+
                 <div class="app-badges">
                     <a href="https://apps.apple.com/tr/app/sinc-discover-book-events/id6742362819">
                         <span class="badge-icon"><i class="fa-brands fa-apple"></i></span>
                         <span><small>Download Sinc on</small><b>the App Store</b></span>
                     </a>
+
                     <a href="https://play.google.com/store/apps/details?id=com.sinc.app">
                         <span class="badge-icon"><i class="fa-brands fa-google-play"></i></span>
                         <span><small>Get Sinc on</small><b>Google Play</b></span>
                     </a>
                 </div>
             </div>
+
             <div class="col-6 col-lg-2">
                 <h6>EXPLORE</h6>
                 <a href="https://sinc.events/">Explore events</a>
                 <a href="https://sinc.today/organizers">For organizers</a>
                 <a href="https://sinc.today/download">Get the app</a>
             </div>
+
             <div class="col-6 col-lg-2">
                 <h6>COMPANY</h6>
                 <a href="https://sinc.today/about">About us</a>
                 <a href="https://sinc.today/delete-account">Delete account</a>
             </div>
+
             <div class="col-6 col-lg-2">
                 <h6>CONTACT</h6>
                 <a href="mailto:team@sinc.today">team@sinc.today</a>
                 <a href="tel:+250796897824">+250 796 897 824</a>
             </div>
+
             <div class="col-6 col-lg-2">
                 <h6>ARTISTS</h6>
+
                 <div class="footer-djs">
                     {% for dj in artists %}
-                        <a href="/?dj={{ dj.slug|urlencode }}">{{ dj.stage_name }}</a>
+                        <a href="{% url 'core:home' dj.slug %}">
+                            {{ dj.stage_name }}
+                        </a>
                     {% empty %}
-                        <a href="/">Choose a DJ</a>
+                        <a href="{% url 'core:artist_directory' %}">Choose a DJ</a>
                     {% endfor %}
                 </div>
+
                 <a href="/subscribe/">Subscribe</a>
                 <a href="{% url 'accounts:login' %}">Management login</a>
             </div>
+
         </div>
+
         <div class="sinc-bottom">
             <span>© {% now "Y" %} Sinc. All rights reserved.</span>
             <span>Artist websites · Music · Events</span>
@@ -189,16 +298,26 @@
 </footer>
 
 <div id="cookie-banner" class="cookie-banner" hidden>
-    <span>We use essential cookies to keep the site working. With your permission, we also use anonymous, cookieless analytics to understand how the site is used.</span>
+    <span>
+        We use essential cookies to keep the site working. With your permission,
+        we also use anonymous, cookieless analytics to understand how the site is used.
+    </span>
+
     <div>
-        <button class="btn btn-sm btn-outline-light" id="cookie-reject">Reject optional</button>
-        <button class="btn btn-sm btn-primary" id="cookie-accept">Accept</button>
+        <button class="btn btn-sm btn-outline-light" id="cookie-reject">
+            Reject optional
+        </button>
+        <button class="btn btn-sm btn-primary" id="cookie-accept">
+            Accept
+        </button>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/site.js' %}"></script>
 <script src="{% static 'js/player.js' %}" defer></script>
+
 {% block extra_scripts %}{% endblock %}
+
 </body>
 </html>
